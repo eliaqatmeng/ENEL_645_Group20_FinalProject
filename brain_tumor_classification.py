@@ -12,6 +12,7 @@ import seaborn as sns
 
 # Check if CUDA GPU is available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print(device)
 
 # Function to save training checkpoint - saved after each epoch is run
 def save_checkpoint(model, optimizer, epoch, filename='checkpoint.pth.tar'):
@@ -23,7 +24,7 @@ def save_checkpoint(model, optimizer, epoch, filename='checkpoint.pth.tar'):
     torch.save(state, filename)
 
 # Function to get a subset of dataset indices - In case it is taking too long to train in the cluster
-def get_subset_indices(dataset, fraction=0.01):
+def get_subset_indices(dataset, fraction=1):
     subset_size = int(len(dataset) * fraction)
     indices = np.random.choice(len(dataset), subset_size, replace=False)
     return indices
