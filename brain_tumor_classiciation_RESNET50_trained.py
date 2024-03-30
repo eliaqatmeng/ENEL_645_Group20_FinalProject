@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import torch
 from torch import nn
@@ -7,12 +8,21 @@ from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from torchvision.models import resnet50
 import numpy as np
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
+# Define the output file path
+output_file = 'brain_tumor_classiciation_RESNET50_trained.txt'
+
+# Redirect standard output to the output file
+sys.stdout = open(output_file, 'w')
+
+
 # Check if CUDA GPU is available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print(device)
 
 # Function to save training checkpoint - saved after each epoch is run
 def save_checkpoint(model, optimizer, epoch, filename='checkpoint.pth.tar'):
@@ -24,7 +34,7 @@ def save_checkpoint(model, optimizer, epoch, filename='checkpoint.pth.tar'):
     torch.save(state, filename)
 
 # Function to get a subset of dataset indices - In case it is taking too long to train in the cluster
-def get_subset_indices(dataset, fraction=0.01):
+def get_subset_indices(dataset, fraction=1):
     subset_size = int(len(dataset) * fraction)
     indices = np.random.choice(len(dataset), subset_size, replace=False)
     return indices
@@ -73,21 +83,19 @@ subset_indices = get_subset_indices(full_dataset)
 subset_dataset = Subset(full_dataset, subset_indices)
 
 # Split dataset into train, validation, and test sets
-num_samples = len(full_dataset)
+num_samples = len(subset_dataset)
 train_size = int(0.7 * num_samples)  
 val_size = int(0.15 * num_samples)   
 test_size = num_samples - train_size - val_size  
 
-train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(full_dataset, [train_size, val_size, test_size])
+train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(subset_dataset, [train_size, val_size, test_size])
 
 # Data loaders
 train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 val_dataloader = DataLoader(val_dataset, batch_size=32, shuffle=False)
 test_dataloader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
-
-
-# Load pre-trained ResNet-50 model
+# Load pre-trained ResNet-101 model
 model = resnet50(pretrained=True)
 
 # Freeze parameters so we don't backprop through them
@@ -96,19 +104,19 @@ for param in model.parameters():
 
 # Replace the last fully connected layer with a new one (assuming your dataset has 2 classes)
 num_ftrs = model.fc.in_features
-model.fc = nn.Linear(num_ftrs, 2)  # Assuming 2 output classes
+model.fc = torch.nn.Linear(num_ftrs, 2)  # Assuming 2 output classes
 
 # Move the model to the appropriate device (CPU or GPU)
 model = model.to(device)
 
 # Define a loss function and optimizer
 criterion = torch.nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=0.0001, momentum=0.9)  # Corrected variable name
+optimizer = torch.optim.SGD(model.parameters(), lr=0.0001, momentum=0.9)
 
 # Training loop with early stopping based on time limit
-num_epochs = 5
+num_epochs = 50
 start_time = time.time()
-time_limit = int(os.getenv('JOB_TIME_LIMIT', '7200'))
+time_limit = int(os.getenv('JOB_TIME_LIMIT', '7200000'))
 safe_margin = 300
 
 for epoch in range(num_epochs):
@@ -149,17 +157,25 @@ for epoch in range(num_epochs):
     accuracy = accuracy_score(all_true_labels, all_predicted_labels)
     conf_matrix = confusion_matrix(all_true_labels, all_predicted_labels)
     class_acc = accuracy_per_class(conf_matrix)
+    
+    # Calculate precision, recall, and F1 score
+    precision = precision_score(all_true_labels, all_predicted_labels)
+    recall = recall_score(all_true_labels, all_predicted_labels)
+    f1 = f1_score(all_true_labels, all_predicted_labels)
 
     print(f'Epoch [{epoch+1}/{num_epochs}], Validation Loss: {val_loss/len(val_dataloader):.4f}, '
         f'Validation Accuracy: {(correct/total)*100:.2f}%, '
-        f'Accuracy per Class: {class_acc}')
+        f'Accuracy per Class: {class_acc}, '
+        f'Precision: {precision:.4f}, '
+        f'Recall: {recall:.4f}, '
+        f'F1 Score: {f1:.4f}')
 
     # Save Confusion Matrix as Image after the last epoch
     if epoch == num_epochs - 1:
-        plot_confusion_matrix(conf_matrix, classes=[str(i) for i in range(2)], filename='confusion_matrix_resnet50.png')
+        plot_confusion_matrix(conf_matrix, classes=[str(i) for i in range(2)], filename='confusion_matrix_resnet50_trained.png')
 
     # Save checkpoint after each epoch
-    save_checkpoint(model, optimizer, epoch, filename=f'checkpoint_epoch_{epoch}.pth.tar')  # Corrected variable name
+    #save_checkpoint(model, optimizer, epoch, filename=f'checkpoint_epoch_{epoch}.pth.tar')
 
     # Check for early stopping due to time limit
     epoch_duration = time.time() - epoch_start_time
@@ -191,10 +207,18 @@ with torch.no_grad():
         all_predicted_labels.extend(predicted.cpu().numpy())
         all_true_labels.extend(labels.cpu().numpy())
 
-accuracy = accuracy_score(all_true_labels, all_predicted_labels)
-conf_matrix = confusion_matrix(all_true_labels, all_predicted_labels)
-class_acc = accuracy_per_class(conf_matrix)
+test_accuracy = accuracy_score(all_true_labels, all_predicted_labels)
+test_conf_matrix = confusion_matrix(all_true_labels, all_predicted_labels)
+test_class_acc = accuracy_per_class(test_conf_matrix)
+
+# Calculate precision, recall, and F1 score for test set
+test_precision = precision_score(all_true_labels, all_predicted_labels)
+test_recall = recall_score(all_true_labels, all_predicted_labels)
+test_f1 = f1_score(all_true_labels, all_predicted_labels)
 
 print(f'Test Loss: {test_loss/len(test_dataloader):.4f}, '
     f'Test Accuracy: {(correct/total)*100:.2f}%, '
-    f'Accuracy per Class: {class_acc}')
+    f'Accuracy per Class: {test_class_acc}, '
+    f'Precision: {test_precision:.4f}, '
+    f'Recall: {test_recall:.4f}, '
+    f'F1 Score: {test_f1:.4f}')

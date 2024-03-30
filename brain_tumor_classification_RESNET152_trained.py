@@ -1,17 +1,27 @@
 import os
+import sys
 import time
 import torch
+from torch import nn
 from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
-from torchvision.models import resnet101
+from torchvision.models import resnet152
 import numpy as np
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# Define the output file path
+output_file = 'brain_tumor_classification_RESNET152_trained.txt'
+
+# Redirect standard output to the output file
+sys.stdout = open(output_file, 'w')
+
+
 # Check if CUDA GPU is available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print(device)
 
 # Function to save training checkpoint - saved after each epoch is run
 def save_checkpoint(model, optimizer, epoch, filename='checkpoint.pth.tar'):
@@ -23,7 +33,7 @@ def save_checkpoint(model, optimizer, epoch, filename='checkpoint.pth.tar'):
     torch.save(state, filename)
 
 # Function to get a subset of dataset indices - In case it is taking too long to train in the cluster
-def get_subset_indices(dataset, fraction=0.01):
+def get_subset_indices(dataset, fraction=1):
     subset_size = int(len(dataset) * fraction)
     indices = np.random.choice(len(dataset), subset_size, replace=False)
     return indices
@@ -53,7 +63,6 @@ def plot_confusion_matrix(conf_matrix, classes, filename=None):
 
 # Define the root directory containing the "brain tumor" and "healthy" folders
 root_dir = r"C:\Users\Gigabyte\Downloads\Brain Tumor Data Set\Brain Tumor Data Set"
-
 
 # Transform dataset input to match inputs for ResNet-101 model
 data_transform = transforms.Compose([
@@ -86,7 +95,7 @@ val_dataloader = DataLoader(val_dataset, batch_size=32, shuffle=False)
 test_dataloader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
 # Load pre-trained ResNet-101 model
-model = resnet101(pretrained=True)
+model = resnet152(pretrained=True)
 
 # Freeze parameters so we don't backprop through them
 for param in model.parameters():
@@ -104,9 +113,9 @@ criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=0.0001, momentum=0.9)
 
 # Training loop with early stopping based on time limit
-num_epochs = 5
+num_epochs = 50
 start_time = time.time()
-time_limit = int(os.getenv('JOB_TIME_LIMIT', '7200'))
+time_limit = int(os.getenv('JOB_TIME_LIMIT', '7200000'))
 safe_margin = 300
 
 for epoch in range(num_epochs):
@@ -162,10 +171,10 @@ for epoch in range(num_epochs):
 
     # Save Confusion Matrix as Image after the last epoch
     if epoch == num_epochs - 1:
-        plot_confusion_matrix(conf_matrix, classes=[str(i) for i in range(2)], filename='confusion_matrix_all.png')
+        plot_confusion_matrix(conf_matrix, classes=[str(i) for i in range(2)], filename='confusion_matrix_resnet152_trained.png')
 
     # Save checkpoint after each epoch
-    save_checkpoint(model, optimizer, epoch, filename=f'checkpoint_epoch_{epoch}.pth.tar')
+    #save_checkpoint(model, optimizer, epoch, filename=f'checkpoint_epoch_{epoch}.pth.tar')
 
     # Check for early stopping due to time limit
     epoch_duration = time.time() - epoch_start_time
