@@ -11,15 +11,8 @@ from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, r
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Define the output file path
-output_file = 'brain_tumor_classiciation_UNET.txt'
-
-# Redirect standard output to the output file
-sys.stdout = open(output_file, 'w')
-
 # Check if CUDA GPU is available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print(device)
 
 # Function to save training checkpoint - saved after each epoch is run
 def save_checkpoint(model, optimizer, epoch, filename='checkpoint.pth.tar'):
@@ -30,8 +23,14 @@ def save_checkpoint(model, optimizer, epoch, filename='checkpoint.pth.tar'):
     }
     torch.save(state, filename)
 
+# Define the output file path
+output_file = 'output_unet.txt'
+
+# Redirect standard output to the output file
+sys.stdout = open(output_file, 'w')
+
 # Function to get a subset of dataset indices - In case it is taking too long to train in the cluster
-def get_subset_indices(dataset, fraction=1):
+def get_subset_indices(dataset, fraction=0.01):
     subset_size = int(len(dataset) * fraction)
     indices = np.random.choice(len(dataset), subset_size, replace=False)
     return indices
@@ -103,9 +102,9 @@ criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=0.0001, momentum=0.9)
 
 # Training loop with early stopping based on time limit
-num_epochs = 50
+num_epochs = 5
 start_time = time.time()
-time_limit = int(os.getenv('JOB_TIME_LIMIT', '7200000'))
+time_limit = int(os.getenv('JOB_TIME_LIMIT', '7200'))
 safe_margin = 300
 
 for epoch in range(num_epochs):
@@ -161,10 +160,10 @@ for epoch in range(num_epochs):
 
     # Save Confusion Matrix as Image after the last epoch
     if epoch == num_epochs - 1:
-        plot_confusion_matrix(conf_matrix, classes=[str(i) for i in range(2)], filename='confusion_matrix_net.png')
+        plot_confusion_matrix(conf_matrix, classes=[str(i) for i in range(2)], filename='confusion_matrix.png')
 
     # Save checkpoint after each epoch
-    #save_checkpoint(model, optimizer, epoch, filename=f'checkpoint_epoch_{epoch}.pth.tar')
+    save_checkpoint(model, optimizer, epoch, filename=f'checkpoint_epoch_{epoch}.pth.tar')
 
     # Check for early stopping due to time limit
     epoch_duration = time.time() - epoch_start_time
@@ -204,7 +203,6 @@ test_class_acc = accuracy_per_class(test_conf_matrix)
 test_precision = precision_score(all_true_labels, all_predicted_labels)
 test_recall = recall_score(all_true_labels, all_predicted_labels)
 test_f1 = f1_score(all_true_labels, all_predicted_labels)
-
 
 print(f'Test Loss: {test_loss/len(test_dataloader):.4f}, '
     f'Test Accuracy: {(correct/total)*100:.2f}%, '
