@@ -1,20 +1,22 @@
 import os
 import sys
 import time
-import numpy as np
 import torch
-from torch import nn
-import torch.nn.functional as F  # Import torch.nn.functional as F
 from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
-from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
+from torchvision.models import resnet50
+import numpy as np
+from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score, roc_curve, auc
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
+import cv2
 
+#class 0 might represent "healthy" images, and class 1 might represent "brain tumor" images.
 
 # Define the output file path
-output_file = 'brain_tumor_classification_simpleCNN_trained.txt'
+output_file = 'outputs/brain_tumor_classification_RESNET50_trained.txt'
 
 # Redirect standard output to the output file
 sys.stdout = open(output_file, 'w')
@@ -33,7 +35,7 @@ def save_checkpoint(model, optimizer, epoch, filename='checkpoint.pth.tar'):
     torch.save(state, filename)
 
 # Function to get a subset of dataset indices - In case it is taking too long to train in the cluster
-def get_subset_indices(dataset, fraction=1):
+def get_subset_indices(dataset, fraction=0.05):
     subset_size = int(len(dataset) * fraction)
     indices = np.random.choice(len(dataset), subset_size, replace=False)
     return indices
@@ -61,12 +63,26 @@ def plot_confusion_matrix(conf_matrix, classes, filename=None):
     else:
         plt.show()
 
+# Function to plot feature maps
+def plot_feature_maps(feature_maps, filename=None):
+    plt.figure(figsize=(10, 10))
+    for i, fmap in enumerate(feature_maps):
+        plt.subplot(8, 8, i + 1)
+        plt.imshow(fmap[0, :, :].detach().cpu().numpy(), cmap='viridis')
+        plt.axis('off')
+    if filename:
+        plt.savefig(filename)  # Save the plot as an image
+        plt.close()  # Close the plot to avoid displaying it
+    else:
+        plt.show()
+
 # Define the root directory containing the "brain tumor" and "healthy" folders
 root_dir = r"C:\Users\Gigabyte\Downloads\Brain Tumor Data Set\Brain Tumor Data Set"
 
-# Transform dataset input to match inputs for SimpleCNN model
+# Transform dataset input to match inputs for ResNet-101 model
 data_transform = transforms.Compose([
-    transforms.Resize((128, 128)),  # Resize images to 128x128
+    transforms.Resize(256),
+    transforms.CenterCrop(224),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
@@ -82,9 +98,9 @@ subset_dataset = Subset(full_dataset, subset_indices)
 
 # Split dataset into train, validation, and test sets
 num_samples = len(subset_dataset)
-train_size = int(0.7 * num_samples)  
-val_size = int(0.15 * num_samples)   
-test_size = num_samples - train_size - val_size  
+train_size = int(0.7 * num_samples)
+val_size = int(0.15 * num_samples)
+test_size = num_samples - train_size - val_size
 
 train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(subset_dataset, [train_size, val_size, test_size])
 
@@ -93,48 +109,37 @@ train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 val_dataloader = DataLoader(val_dataset, batch_size=32, shuffle=False)
 test_dataloader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
-class SimpleCNN(nn.Module):
-    def __init__(self, num_classes=2):  # Specify the number of output classes
-        super(SimpleCNN, self).__init__()
-        self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
-        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.fc1 = nn.Linear(128 * 32 * 32, 512)  # Adjust input size based on your image dimensions
-        self.fc2 = nn.Linear(512, num_classes)  # Adjust output size based on the number of classes
+# Load pre-trained ResNet-101 model
+model = resnet50(pretrained=True)
 
-    def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = self.pool(F.relu(self.conv3(x)))
-        x = x.view(-1, 128 * 32 * 32)
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x
+# Freeze parameters so we don't backprop through them
+for param in model.parameters():
+    param.requires_grad = False
 
-# Initialize your simple CNN model
-num_classes = 2  # Assuming 2 output classes
-model = SimpleCNN(num_classes=num_classes)
+# Replace the last fully connected layer with a new one (assuming your dataset has 2 classes)
+num_ftrs = model.fc.in_features
+model.fc = torch.nn.Linear(num_ftrs, 2)  # Assuming 2 output classes
 
-# Move the model to the appropriate device
+# Move the model to the appropriate device (CPU or GPU)
 model = model.to(device)
 
 # Define a loss function and optimizer
 criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=0.0001, momentum=0.9)
 
-# Training loop
+# Training loop with early stopping based on time limit
 num_epochs = 50
 start_time = time.time()
 time_limit = int(os.getenv('JOB_TIME_LIMIT', '7200000'))
 safe_margin = 300
+
 for epoch in range(num_epochs):
     epoch_start_time = time.time()
     model.train()
     for images, labels in train_dataloader:
         # Move data to GPU
         images, labels = images.to(device), labels.to(device)
-        
+
         optimizer.zero_grad()
         outputs = model(images)
         loss = criterion(outputs, labels)
@@ -153,7 +158,7 @@ for epoch in range(num_epochs):
         for images, labels in val_dataloader:
             # Move data to GPU
             images, labels = images.to(device), labels.to(device)
-            
+
             outputs = model(images)
             _, predicted = torch.max(outputs, 1)
             total += labels.size(0)
@@ -166,26 +171,22 @@ for epoch in range(num_epochs):
     accuracy = accuracy_score(all_true_labels, all_predicted_labels)
     conf_matrix = confusion_matrix(all_true_labels, all_predicted_labels)
     class_acc = accuracy_per_class(conf_matrix)
-    
+
     # Calculate precision, recall, and F1 score
     precision = precision_score(all_true_labels, all_predicted_labels)
     recall = recall_score(all_true_labels, all_predicted_labels)
     f1 = f1_score(all_true_labels, all_predicted_labels)
 
-    
-
     print(f'Epoch [{epoch+1}/{num_epochs}], Validation Loss: {val_loss/len(val_dataloader):.4f}, '
-        f'Validation Accuracy: {(correct/total)*100:.2f}%, '
-        f'Accuracy per Class: {class_acc}, '
-        f'Precision: {precision:.4f}, '
-        f'Recall: {recall:.4f}, '
-        f'F1 Score: {f1:.4f}')
+          f'Validation Accuracy: {(correct/total)*100:.2f}%, '
+          f'Accuracy per Class: {class_acc}, '
+          f'Precision: {precision:.4f}, '
+          f'Recall: {recall:.4f}, '
+          f'F1 Score: {f1:.4f}')
+
     # Save Confusion Matrix as Image after the last epoch
     if epoch == num_epochs - 1:
-        plot_confusion_matrix(conf_matrix, classes=[str(i) for i in range(2)], filename='confusion_matrix_simpleCNN_trained.png')
-
-    # Save checkpoint after each epoch
-    #save_checkpoint(model, optimizer, epoch, filename=f'checkpoint_epoch_{epoch}.pth.tar')
+        plot_confusion_matrix(conf_matrix, classes=[str(i) for i in range(2)], filename='outputs/confusion_matrix_resnet50_trained.png')
 
     # Check for early stopping due to time limit
     epoch_duration = time.time() - epoch_start_time
@@ -207,7 +208,7 @@ with torch.no_grad():
     for images, labels in test_dataloader:
         # Move data to GPU
         images, labels = images.to(device), labels.to(device)
-        
+
         outputs = model(images)
         _, predicted = torch.max(outputs, 1)
         total += labels.size(0)
@@ -227,8 +228,61 @@ test_recall = recall_score(all_true_labels, all_predicted_labels)
 test_f1 = f1_score(all_true_labels, all_predicted_labels)
 
 print(f'Test Loss: {test_loss/len(test_dataloader):.4f}, '
-    f'Test Accuracy: {(correct/total)*100:.2f}%, '
-    f'Accuracy per Class: {test_class_acc}, '
-    f'Precision: {test_precision:.4f}, '
-    f'Recall: {test_recall:.4f}, '
-    f'F1 Score: {test_f1:.4f}')
+      f'Test Accuracy: {(correct/total)*100:.2f}%, '
+      f'Accuracy per Class: {test_class_acc}, '
+      f'Precision: {test_precision:.4f}, '
+      f'Recall: {test_recall:.4f}, '
+      f'F1 Score: {test_f1:.4f}')
+
+# Calculate probabilities and labels for the test set
+probs = []
+labels = []
+with torch.no_grad():
+    for images, true_labels in test_dataloader:
+        images, true_labels = images.to(device), true_labels.to(device)
+        output = model(images)
+        prob = torch.softmax(output, dim=1)
+        probs.extend(prob.cpu().numpy()[:, 1])  # Use the probability for the positive class
+        labels.extend(true_labels.cpu().numpy())
+
+# Compute ROC curve and AUC
+fpr, tpr, thresholds = roc_curve(labels, probs)
+roc_auc = auc(fpr, tpr)
+
+# Plot ROC Curve
+plt.figure()
+plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (area = {roc_auc:.2f})')
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic (ROC) Curve')
+plt.legend(loc="lower right")
+plt.savefig('outputs/ROC_curve_resnet50_trained.png')
+plt.close()
+
+# Output AUC and ROC data as CSV
+roc_data = pd.DataFrame({'False Positive Rate': fpr, 'True Positive Rate': tpr, 'Thresholds': thresholds})
+roc_data.to_csv('outputs/ROC_data_resnet50_trained.csv', index=False)
+
+print(f'AUC: {roc_auc:.4f}')
+
+# Visualize Feature Maps
+# Choose an image and its corresponding label from the test set
+sample_image, sample_label = next(iter(test_dataloader))
+sample_image, sample_label = sample_image[0], sample_label[0]
+sample_image = sample_image.unsqueeze(0).to(device)
+
+# Forward pass through the model
+model.eval()
+with torch.no_grad():
+    activations = []
+    def hook(module, input, output):
+        activations.append(output.cpu())
+    hook_handle = model.layer4.register_forward_hook(hook)  # Choose any intermediate layer, here we choose layer4
+    model(sample_image)
+    hook_handle.remove()
+
+# Plot feature maps
+plot_feature_maps(activations, filename='outputs/feature_maps_resnet50_trained.png')
