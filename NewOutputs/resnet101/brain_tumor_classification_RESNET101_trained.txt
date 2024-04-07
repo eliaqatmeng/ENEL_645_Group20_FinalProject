@@ -1,0 +1,54 @@
+cuda:0
+Epoch [1/50], Validation Loss: 0.5180, Validation Accuracy: 80.87%, Accuracy per Class: [0.91029024 0.68488746], Precision: 0.8623, Recall: 0.6849, F1 Score: 0.7634
+Epoch [2/50], Validation Loss: 0.4314, Validation Accuracy: 85.51%, Accuracy per Class: [0.90237467 0.79742765], Precision: 0.8702, Recall: 0.7974, F1 Score: 0.8322
+Epoch [3/50], Validation Loss: 0.3891, Validation Accuracy: 86.38%, Accuracy per Class: [0.88126649 0.84244373], Precision: 0.8534, Recall: 0.8424, F1 Score: 0.8479
+Epoch [4/50], Validation Loss: 0.3602, Validation Accuracy: 86.38%, Accuracy per Class: [0.89709763 0.82315113], Precision: 0.8678, Recall: 0.8232, F1 Score: 0.8449
+Epoch [5/50], Validation Loss: 0.3393, Validation Accuracy: 86.96%, Accuracy per Class: [0.88654354 0.8488746 ], Precision: 0.8599, Recall: 0.8489, F1 Score: 0.8544
+Epoch [6/50], Validation Loss: 0.3238, Validation Accuracy: 88.41%, Accuracy per Class: [0.92084433 0.8392283 ], Precision: 0.8969, Recall: 0.8392, F1 Score: 0.8671
+Epoch [7/50], Validation Loss: 0.3117, Validation Accuracy: 88.26%, Accuracy per Class: [0.89709763 0.86495177], Precision: 0.8734, Recall: 0.8650, F1 Score: 0.8691
+Epoch [8/50], Validation Loss: 0.3017, Validation Accuracy: 88.84%, Accuracy per Class: [0.8944591  0.88102894], Precision: 0.8726, Recall: 0.8810, F1 Score: 0.8768
+Epoch [9/50], Validation Loss: 0.3012, Validation Accuracy: 87.68%, Accuracy per Class: [0.85224274 0.90675241], Precision: 0.8343, Recall: 0.9068, F1 Score: 0.8690
+Epoch [10/50], Validation Loss: 0.2879, Validation Accuracy: 89.13%, Accuracy per Class: [0.89182058 0.89067524], Precision: 0.8711, Recall: 0.8907, F1 Score: 0.8808
+Epoch [11/50], Validation Loss: 0.2791, Validation Accuracy: 88.55%, Accuracy per Class: [0.89182058 0.8778135 ], Precision: 0.8694, Recall: 0.8778, F1 Score: 0.8736
+Epoch [12/50], Validation Loss: 0.2724, Validation Accuracy: 90.29%, Accuracy per Class: [0.92084433 0.88102894], Precision: 0.9013, Recall: 0.8810, F1 Score: 0.8911
+Epoch [13/50], Validation Loss: 0.2684, Validation Accuracy: 90.14%, Accuracy per Class: [0.91556728 0.88424437], Precision: 0.8958, Recall: 0.8842, F1 Score: 0.8900
+Epoch [14/50], Validation Loss: 0.2628, Validation Accuracy: 90.29%, Accuracy per Class: [0.90765172 0.89710611], Precision: 0.8885, Recall: 0.8971, F1 Score: 0.8928
+Epoch [15/50], Validation Loss: 0.2591, Validation Accuracy: 90.14%, Accuracy per Class: [0.90765172 0.89389068], Precision: 0.8882, Recall: 0.8939, F1 Score: 0.8910
+Epoch [16/50], Validation Loss: 0.2546, Validation Accuracy: 90.29%, Accuracy per Class: [0.9182058  0.88424437], Precision: 0.8987, Recall: 0.8842, F1 Score: 0.8914
+Epoch [17/50], Validation Loss: 0.2538, Validation Accuracy: 90.72%, Accuracy per Class: [0.91556728 0.89710611], Precision: 0.8971, Recall: 0.8971, F1 Score: 0.8971
+Epoch [18/50], Validation Loss: 0.2492, Validation Accuracy: 91.01%, Accuracy per Class: [0.91029024 0.90996785], Precision: 0.8927, Recall: 0.9100, F1 Score: 0.9013
+Epoch [19/50], Validation Loss: 0.2494, Validation Accuracy: 91.16%, Accuracy per Class: [0.91292876 0.90996785], Precision: 0.8956, Recall: 0.9100, F1 Score: 0.9027
+Epoch [20/50], Validation Loss: 0.2467, Validation Accuracy: 91.30%, Accuracy per Class: [0.93139842 0.89067524], Precision: 0.9142, Recall: 0.8907, F1 Score: 0.9023
+Epoch [21/50], Validation Loss: 0.2391, Validation Accuracy: 91.30%, Accuracy per Class: [0.93139842 0.89067524], Precision: 0.9142, Recall: 0.8907, F1 Score: 0.9023
+Epoch [22/50], Validation Loss: 0.2359, Validation Accuracy: 91.45%, Accuracy per Class: [0.92875989 0.89710611], Precision: 0.9118, Recall: 0.8971, F1 Score: 0.9044
+Epoch [23/50], Validation Loss: 0.2352, Validation Accuracy: 91.16%, Accuracy per Class: [0.92348285 0.89710611], Precision: 0.9058, Recall: 0.8971, F1 Score: 0.9015
+Epoch [24/50], Validation Loss: 0.2328, Validation Accuracy: 90.87%, Accuracy per Class: [0.92084433 0.89389068], Precision: 0.9026, Recall: 0.8939, F1 Score: 0.8982
+Epoch [25/50], Validation Loss: 0.2310, Validation Accuracy: 91.16%, Accuracy per Class: [0.92084433 0.90032154], Precision: 0.9032, Recall: 0.9003, F1 Score: 0.9018
+Epoch [26/50], Validation Loss: 0.2313, Validation Accuracy: 91.59%, Accuracy per Class: [0.91556728 0.91639871], Precision: 0.8991, Recall: 0.9164, F1 Score: 0.9076
+Epoch [27/50], Validation Loss: 0.2250, Validation Accuracy: 92.17%, Accuracy per Class: [0.93931398 0.90032154], Precision: 0.9241, Recall: 0.9003, F1 Score: 0.9121
+Epoch [28/50], Validation Loss: 0.2248, Validation Accuracy: 91.74%, Accuracy per Class: [0.92084433 0.91318328], Precision: 0.9045, Recall: 0.9132, F1 Score: 0.9088
+Epoch [29/50], Validation Loss: 0.2242, Validation Accuracy: 91.74%, Accuracy per Class: [0.92612137 0.90675241], Precision: 0.9097, Recall: 0.9068, F1 Score: 0.9082
+Epoch [30/50], Validation Loss: 0.2189, Validation Accuracy: 92.17%, Accuracy per Class: [0.93931398 0.90032154], Precision: 0.9241, Recall: 0.9003, F1 Score: 0.9121
+Epoch [31/50], Validation Loss: 0.2192, Validation Accuracy: 91.88%, Accuracy per Class: [0.92348285 0.91318328], Precision: 0.9073, Recall: 0.9132, F1 Score: 0.9103
+Epoch [32/50], Validation Loss: 0.2156, Validation Accuracy: 92.03%, Accuracy per Class: [0.93403694 0.90353698], Precision: 0.9183, Recall: 0.9035, F1 Score: 0.9109
+Epoch [33/50], Validation Loss: 0.2185, Validation Accuracy: 92.03%, Accuracy per Class: [0.92612137 0.91318328], Precision: 0.9103, Recall: 0.9132, F1 Score: 0.9117
+Epoch [34/50], Validation Loss: 0.2151, Validation Accuracy: 92.03%, Accuracy per Class: [0.92612137 0.91318328], Precision: 0.9103, Recall: 0.9132, F1 Score: 0.9117
+Epoch [35/50], Validation Loss: 0.2114, Validation Accuracy: 92.46%, Accuracy per Class: [0.92875989 0.91961415], Precision: 0.9137, Recall: 0.9196, F1 Score: 0.9167
+Epoch [36/50], Validation Loss: 0.2153, Validation Accuracy: 92.03%, Accuracy per Class: [0.92612137 0.91318328], Precision: 0.9103, Recall: 0.9132, F1 Score: 0.9117
+Epoch [37/50], Validation Loss: 0.2140, Validation Accuracy: 91.88%, Accuracy per Class: [0.91556728 0.92282958], Precision: 0.8997, Recall: 0.9228, F1 Score: 0.9111
+Epoch [38/50], Validation Loss: 0.2098, Validation Accuracy: 92.61%, Accuracy per Class: [0.93667546 0.91318328], Precision: 0.9221, Recall: 0.9132, F1 Score: 0.9176
+Epoch [39/50], Validation Loss: 0.2060, Validation Accuracy: 92.61%, Accuracy per Class: [0.93667546 0.91318328], Precision: 0.9221, Recall: 0.9132, F1 Score: 0.9176
+Epoch [40/50], Validation Loss: 0.2055, Validation Accuracy: 92.46%, Accuracy per Class: [0.92612137 0.92282958], Precision: 0.9111, Recall: 0.9228, F1 Score: 0.9169
+Epoch [41/50], Validation Loss: 0.2063, Validation Accuracy: 92.32%, Accuracy per Class: [0.93403694 0.90996785], Precision: 0.9188, Recall: 0.9100, F1 Score: 0.9144
+Epoch [42/50], Validation Loss: 0.2050, Validation Accuracy: 92.46%, Accuracy per Class: [0.94722955 0.89710611], Precision: 0.9331, Recall: 0.8971, F1 Score: 0.9148
+Epoch [43/50], Validation Loss: 0.2033, Validation Accuracy: 92.61%, Accuracy per Class: [0.93931398 0.90996785], Precision: 0.9248, Recall: 0.9100, F1 Score: 0.9173
+Epoch [44/50], Validation Loss: 0.2080, Validation Accuracy: 91.88%, Accuracy per Class: [0.91292876 0.92604502], Precision: 0.8972, Recall: 0.9260, F1 Score: 0.9114
+Epoch [45/50], Validation Loss: 0.2001, Validation Accuracy: 92.61%, Accuracy per Class: [0.93403694 0.91639871], Precision: 0.9194, Recall: 0.9164, F1 Score: 0.9179
+Epoch [46/50], Validation Loss: 0.2025, Validation Accuracy: 92.75%, Accuracy per Class: [0.93403694 0.91961415], Precision: 0.9196, Recall: 0.9196, F1 Score: 0.9196
+Epoch [47/50], Validation Loss: 0.2009, Validation Accuracy: 92.61%, Accuracy per Class: [0.94195251 0.90675241], Precision: 0.9276, Recall: 0.9068, F1 Score: 0.9171
+Epoch [48/50], Validation Loss: 0.1986, Validation Accuracy: 92.32%, Accuracy per Class: [0.93667546 0.90675241], Precision: 0.9216, Recall: 0.9068, F1 Score: 0.9141
+Epoch [49/50], Validation Loss: 0.2008, Validation Accuracy: 91.74%, Accuracy per Class: [0.91029024 0.92604502], Precision: 0.8944, Recall: 0.9260, F1 Score: 0.9100
+Epoch [50/50], Validation Loss: 0.1992, Validation Accuracy: 92.61%, Accuracy per Class: [0.92348285 0.92926045], Precision: 0.9088, Recall: 0.9293, F1 Score: 0.9189
+AUC: 0.9833
+
+Test Loss: 0.1829, Test Accuracy: 92.90%, Accuracy per Class: [0.94666667 0.90793651], Precision: 0.9346, Recall: 0.9079, F1 Score: 0.9211
