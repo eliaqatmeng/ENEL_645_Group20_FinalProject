@@ -247,15 +247,15 @@ def load_and_preprocess_image(image_path, resize_dim=(224, 224)):
 
 # List of image paths
 image_paths = [
-    r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (1413).jpg", 
-    r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (1609).jpg",
-    r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (2406).jpg",
-    r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (2425).jpg",
-    r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Not Cancer  (13).jpg",
-    r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Not Cancer  (52).jpg"]
+    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (1413).jpg", 0),
+    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (1609).jpg", 0),
+    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (2406).jpg", 0),
+    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (2425).jpg", 0),
+    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Not Cancer  (13).jpg", 1),
+    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Not Cancer  (52).jpg", 1)]
 
 # Loop over each image
-for image_path in image_paths:
+for image_path, target in image_paths:
     # Load and preprocess the image
     image_tensor, original_image = load_and_preprocess_image(image_path)
 
@@ -273,7 +273,7 @@ for image_path in image_paths:
     print(f"Predicted Class Label: {predicted_class_label}")
 
     # Get the Grad-CAM heatmap
-    heatmap = compute_grad_cam(model, image_tensor)
+    heatmap = compute_grad_cam(model, image_tensor, target)
 
     # Resize the heatmap to match the image size
     heatmap = cv2.resize(heatmap, (original_image.shape[1], original_image.shape[0]))

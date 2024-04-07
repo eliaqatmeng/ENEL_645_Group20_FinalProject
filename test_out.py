@@ -47,4 +47,18 @@ for each in images:
     print(output_image_path)
     a = a + 1
 
+image_paths = [
+    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (1413).jpg",0), 
+    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (1609).jpg",0), 
+    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (2406).jpg",0), 
+    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (2425).jpg",0), 
+    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Not Cancer  (13).jpg",0), 
+    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Not Cancer  (52).jpg",1)]
+
+bfull = [0,0,0,0,1,1]
+
+for image_path, idt in image_paths:
+    # Load and preprocess the image
+    print(image_path, idt)
+    
 
