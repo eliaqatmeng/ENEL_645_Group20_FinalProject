@@ -20,7 +20,6 @@ output_file = 'maps/vgg16_untrain/brain_tumor_classification_VGG16_untrained.txt
 
 # Redirect standard output to the output file
 sys.stdout = open(output_file, 'w')
-
 # Check if CUDA GPU is available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
@@ -247,12 +246,12 @@ def load_and_preprocess_image(image_path, resize_dim=(224, 224)):
 
 # List of image paths
 image_paths = [
-    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (1413).jpg", 0),
-    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (1609).jpg", 0),
-    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (2406).jpg", 0),
-    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (2425).jpg", 0),
-    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Not Cancer  (13).jpg", 1),
-    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Not Cancer  (52).jpg", 1)]
+    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (1413).jpg", 1),
+    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (1609).jpg", 1),
+    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (2406).jpg", 1),
+    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Cancer (2425).jpg", 1),
+    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Not Cancer  (13).jpg", 0),
+    (r"C:\Users\Gigabyte\Downloads\enel_645_final\testing\images\Not Cancer  (52).jpg", 0)]
 
 # Loop over each image
 for image_path, target in image_paths:
@@ -273,7 +272,7 @@ for image_path, target in image_paths:
     print(f"Predicted Class Label: {predicted_class_label}")
 
     # Get the Grad-CAM heatmap
-    heatmap = compute_grad_cam(model, image_tensor, target)
+    heatmap = compute_grad_cam(model, image_tensor)
 
     # Resize the heatmap to match the image size
     heatmap = cv2.resize(heatmap, (original_image.shape[1], original_image.shape[0]))
